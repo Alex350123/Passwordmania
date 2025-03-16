@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>music_authentication.html - 音乐认证系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-2xl shadow-lg w-96">
+        <h2 class="text-2xl font-bold mb-6 text-center">音乐认证</h2>
+        <audio id="audioPlayer" class="w-full mb-4" controls></audio>
+        <div id="options" class="grid grid-cols-1 gap-4"></div>
+        <p id="progress" class="mt-4 text-center text-gray-600">第 1 / 5 首</p>
+    </div>
+
+    <script>
+        const songs = [
+            { name: "Song A", url: "songA.mp3" },
+            { name: "Song B", url: "songB.mp3" },
+            { name: "Song C", url: "songC.mp3" },
+            { name: "Song D", url: "songD.mp3" },
+            { name: "Song E", url: "songE.mp3" },
+            { name: "Song F", url: "songF.mp3" }
+        ];
+
+        let currentRound = 1;
+        const maxRounds = 5;
+        let correctSong;
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function loadSong() {
+            correctSong = songs[Math.floor(Math.random() * songs.length)];
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.src = correctSong.url;
+            audioPlayer.currentTime = 0;
+            audioPlayer.play();
+
+            setTimeout(() => {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+            }, 1000);
+
+            const options = shuffle([
+                correctSong,
+                ...shuffle(songs.filter(s => s !== correctSong)).slice(0, 3)
+            ]);
+
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option.name;
+                button.className = 'w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition';
+                button.onclick = () => verifyAnswer(option);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function verifyAnswer(selected) {
+            if (selected.name === correctSong.name) {
+                if (currentRound < maxRounds) {
+                    currentRound++;
+                    document.getElementById('progress').textContent = `第 ${currentRound} / ${maxRounds} 首`;
+                    loadSong();
+                } else {
+                    alert('认证成功！');
+                    window.location.href = 'pass.html';
+                }
+            } else {
+                alert('认证失败，返回登录页面。');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // 禁止用户手动控制进度条
+        document.getElementById('audioPlayer').addEventListener('timeupdate', function() {
+            if (this.currentTime > 1) {
+                this.pause();
+                this.currentTime = 0;
+            }
+        });
+
+        loadSong();
+    </script>
+</body>
+</html>
