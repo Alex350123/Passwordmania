@@ -9,7 +9,8 @@
 <body class="bg-gray-100 flex items-center justify-center h-screen">
     <div class="bg-white p-8 rounded-2xl shadow-lg w-96">
         <h2 class="text-2xl font-bold mb-6 text-center">音乐认证</h2>
-        <audio id="audioPlayer" class="w-full mb-4" controls></audio>
+        <audio id="audioPlayer" class="w-full mb-4" hidden></audio> <!-- 隐藏默认的播放控件 -->
+        <button onclick="playPreview()" class="mb-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">播放预览</button> <!-- 自定义播放按钮 -->
         <div id="options" class="grid grid-cols-1 gap-4"></div>
         <p id="progress" class="mt-4 text-center text-gray-600">第 1 / 5 首</p>
     </div>
@@ -20,9 +21,9 @@
         let correctSong;
         let songs = [];
 
-        //  user_id and Token
-        const userId = localStorage.getItem('userId');  
-        const token = localStorage.getItem('token');  
+        // user_id and Token
+        const userId = localStorage.getItem('userId');
+        const token = localStorage.getItem('token');
 
         async function fetchSongs() {
             if (!userId || !token) {
@@ -74,15 +75,8 @@
             }
 
             correctSong = songs[Math.floor(Math.random() * songs.length)];
-            const audioPlayer = document.getElementById('audioPlayer');
-            audioPlayer.src = correctSong.url;
-            audioPlayer.currentTime = 0;
-            audioPlayer.play();
-
-            setTimeout(() => {
-                audioPlayer.pause();
-                audioPlayer.currentTime = 0;
-            }, 1000);
+            document.getElementById('audioPlayer').src = correctSong.url;
+            playPreview();
 
             const options = shuffle([
                 correctSong,
@@ -100,6 +94,17 @@
             });
         }
 
+        function playPreview() {
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.currentTime = 0;
+            audioPlayer.play();
+
+            setTimeout(() => {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+            }, 1000);
+        }
+
         function verifyAnswer(selected) {
             if (selected.name === correctSong.name) {
                 if (currentRound < maxRounds) {
@@ -108,11 +113,11 @@
                     loadSong();
                 } else {
                     alert('auth success！');
-                    window.location.href = 'pass.html';
+                    window.location.href = '/pass/';
                 }
             } else {
                 alert('auth failed，back to login page。');
-                window.location.href = 'login.html';
+                window.location.href = '/';
             }
         }
 

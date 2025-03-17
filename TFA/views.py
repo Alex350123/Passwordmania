@@ -15,68 +15,82 @@ from .serializers import CustomUserSerializer, LoginSerializer
 from django.http import JsonResponse
 import requests
 
+
 def spotify_search_view(request):
     client_id = 'fa6160056b324d3dba6f28b488af0acf'
     client_secret = '85ef8936372d480a8c722a6eee8896b2'
     token = get_spotify_token(client_id, client_secret)
 
+    # print(f"Spotify Token: {token}")
+
     if not token:
         return JsonResponse({'error': 'Unable to authenticate with Spotify'}, status=400)
 
     query = request.GET.get('query', '')
-    search_results = search_tracks(query, token)  # 获取搜索结果
-    filtered_tracks = []
+    search_results = search_tracks(query, token)
 
+    # print(f"Spotify API Response: {search_results}")
+
+    filtered_tracks = []
     node_server_url = "http://localhost:3000/preview"  # Node.js 服务器地址
 
     for track in search_results.get("tracks", {}).get("items", []):
-        preview_url = track.get("preview_url")  # 尝试获取 Spotify 提供的 preview_url
+        title = track["name"]
+        preview_url = track.get("preview_url")  # 先尝试从 Spotify API 获取
 
-        if not preview_url:  # 如果没有预览 URL，尝试从 Node.js 获取
+        # 如果 `preview_url` 为空，则调用 Node.js 服务器
+        if not preview_url:
             try:
-                response = requests.get(f"{node_server_url}?title={track['name']}")
-                if response.status_code == 200:
-                    preview_data = response.json()
+                node_response = requests.get(f"{node_server_url}?title={title}")
+                if node_response.status_code == 200:
+                    preview_data = node_response.json()
                     preview_url = preview_data.get("previewUrl", None)
-                    print(f"Fetched from Node.js: {preview_url}")  # 调试日志
+                    print(f" Node.js 返回的 previewUrl: {preview_url}")  #  调试信息
             except requests.RequestException as e:
-                print(f"Error fetching preview URL from Node.js: {e}")
+                print(f" 获取 previewUrl 失败: {e}")
 
-        # 只返回有 preview_url 的歌曲
+
         if preview_url:
             filtered_tracks.append({
                 'spotify_id': track["id"],
-                'title': track["name"],
+                'title': title,
                 'artist': ', '.join(artist["name"] for artist in track["artists"]),
-                'preview_url': preview_url  # 确保返回的歌曲都带 `preview_url`
+                'preview_url': preview_url
             })
 
+    print(f"过滤后的歌曲列表: {filtered_tracks}")  #  调试信息
     return JsonResponse({'tracks': filtered_tracks}, safe=False)
+
 
 def select_music_view(request):
     return render(request,"selectmusic.html")
 
-@api_view(['POST'])
-@permission_classes([AllowAny])  # 如果注册时即调用此API，可能需要AllowAny
-def save_music(request):
-    user_id = request.data.get('user_id')  # 获取用户ID
-    spotify_ids = request.data.get('spotify_ids', [])
-    music_objects = []
 
-    # 根据提供的用户ID获取用户对象
-    user = get_object_or_404(CustomUser, id=user_id)
+@api_view(['POST'])
+@permission_classes([AllowAny])  # 允许未登录用户调用（如果安全性允许）
+def save_music(request):
+    user_id = request.data.get('user_id')  # 获取用户 ID
+    spotify_ids = request.data.get('spotify_ids', [])  # 获取歌曲列表
+
+    user = get_object_or_404(CustomUser, id=user_id)  # 获取用户
+    music_objects = []
 
     for spotify_data in spotify_ids:
         spotify_id = spotify_data.get('spotify_id')
-        # 查找现有的 Music 对象或创建新的（如果不存在）
-        music, created = Music.objects.get_or_create(
+        title = spotify_data.get('title', 'Unknown')
+        artist = spotify_data.get('artist', 'Unknown')
+        preview_url = spotify_data.get('preview_url', '')  # 获取预览 URL
+
+        # 创建或更新 Music 记录
+        music, created = Music.objects.update_or_create(
             spotify_id=spotify_id,
-            defaults={'title': spotify_data.get('title', 'Unknown'), 'artist': spotify_data.get('artist', 'Unknown')}
+            defaults={'title': title, 'artist': artist, 'preview_url': preview_url}
         )
         music_objects.append(music)
 
-    # 更新指定用户的 music 列表
-    user.music.add(*music_objects)  # 使用 add 而不是 set 来避免移除现有关联
+    # 添加到用户的音乐库
+    user.music.add(*music_objects)
+
     return Response({'message': 'Music updated/added successfully'}, status=status.HTTP_200_OK)
 
 
@@ -109,50 +123,28 @@ class LoginAPIView(APIView):
 def login_view(request):
     return render(request, 'login.html')
 
-def get_spotify_track_details(spotify_id, token):
-    """从Spotify获取曲目详情，包括预览URL。"""
-    headers = {
-        'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json'
-    }
-    response = requests.get(f'https://api.spotify.com/v1/tracks/{spotify_id}', headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return None
-
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated]) # 允许未登录用户查询（如果安全性允许）
+@permission_classes([IsAuthenticated])
 def load_music_preview(request):
     """根据 user_id 从用户音乐库中随机加载歌曲预览"""
+    user_id = request.query_params.get('user_id')
+    if not user_id:
+        return Response({'error': 'provided with no ID'}, status=status.HTTP_400_BAD_REQUEST)
+    user = get_object_or_404(CustomUser, id=user_id)
+    user_music = user.music.all().order_by('?')[:5]
+    tracks_details = [{
+        'title': music.title,
+        'artist': music.artist,
+        'preview_url': music.preview_url
+    } for music in user_music if music.preview_url]
 
-    user_id = request.query_params.get('user_id')  # 从请求参数获取 user_id
-    if user_id:
-        user = get_object_or_404(CustomUser, id=user_id)  # 获取特定用户
-    else:
-        if not request.user.is_authenticated:
-            return Response({'error': '用户未认证，请提供 user_id 或登录'}, status=status.HTTP_401_UNAUTHORIZED)
-        user = request.user  # 默认使用当前登录用户
-
-    user_music = user.music.all().order_by('?')[:5]  # 随机选择 5 首歌曲
-
-    client_id = 'fa6160056b324d3dba6f28b488af0acf'
-    client_secret = '85ef8936372d480a8c722a6eee8896b2'
-    token = get_spotify_token(client_id, client_secret)
-
-    tracks_details = []
-    for music in user_music:
-        track_details = get_spotify_track_details(music.spotify_id, token)
-        if track_details and 'preview_url' in track_details:
-            tracks_details.append({
-                'title': track_details['name'],
-                'artist': ', '.join(artist['name'] for artist in track_details['artists']),
-                'preview_url': track_details['preview_url']
-            })
-        print(track_details)  # 调试信息
+    if not tracks_details:
+        return Response({'error': 'No available preview urls'}, status=status.HTTP_404_NOT_FOUND)
 
     return Response(tracks_details, status=status.HTTP_200_OK)
 
 def authenticate_view(request):
     return render(request,'music_authentication.html')
+def pass_view(request):
+    return render(request,"pass.html")

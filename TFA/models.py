@@ -7,6 +7,7 @@ class Music(models.Model):
     spotify_id = models.CharField(max_length=255, unique=True)  # Spotify 的唯一标识符
     title = models.CharField(max_length=255)  # 歌曲标题
     artist = models.CharField(max_length=255)  # 艺术家名字
+    preview_url = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return f"{self.title} by {self.artist}"  # 返回歌曲信息，便于管理和调试

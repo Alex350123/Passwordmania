@@ -32,7 +32,7 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(CustomUser, CustomUserAdmin)
 
 class MusicAdmin(admin.ModelAdmin):
-    list_display = ('spotify_id', 'title', 'artist')
+    list_display = ('spotify_id', 'title', 'artist','preview_url')
     search_fields = ('title', 'artist')
     ordering = ('title',)
 

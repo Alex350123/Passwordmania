@@ -89,24 +89,21 @@
                 .catch(error => console.error('Error fetching songs:', error));
         }
 
-        function selectSong(track, li, button) {
+        function selectSong(track, li) {
             const trackDetails = {
                 spotify_id: track.spotify_id,
                 title: track.title,
                 artist: track.artist,
-                preview_url: track.preview_url || null
+                preview_url: track.preview_url  // 确保 preview_url 也被存储
             };
-
+        
             if (selectedSongs.has(track.spotify_id)) {
                 selectedSongs.delete(track.spotify_id);
                 li.classList.remove('selected');
-                button.textContent = 'Select';
             } else {
                 selectedSongs.set(track.spotify_id, trackDetails);
                 li.classList.add('selected');
-                button.textContent = 'Deselect';
             }
-
             refreshSelectedSongs();
         }
 
@@ -144,27 +141,16 @@
 
         function submitSongs(event) {
             event.preventDefault();
-
+            
             if (selectedSongs.size < 5) {
                 alert('Please select at least 5 songs.');
                 return;
             }
-
-            const songsData = Array.from(selectedSongs.values()).map(song => ({
-                spotify_id: song.spotify_id,
-                title: song.title,
-                artist: song.artist,
-                preview_url: song.preview_url
-            }));
-
+        
+            const songsData = Array.from(selectedSongs.values());
+        
             const userId = localStorage.getItem('userId');
-            if (!userId) {
-                alert('User ID missing. Please login again.');
-                return;
-            }
-
-            console.log("Submitting:", { user_id: userId, spotify_ids: songsData });
-
+        
             fetch('/api/savemusic/', {
                 method: 'POST',
                 headers: {
