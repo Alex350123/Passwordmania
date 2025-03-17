@@ -111,10 +111,10 @@ class LoginAPIView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.validated_data  # 确保这里返回的是用户对象
+            user = serializer.validated_data
             if user:
                 token, created = Token.objects.get_or_create(user=user)
-                return Response({'token': token.key}, status=status.HTTP_200_OK)
+                return Response({'token': token.key,'id':user.id}, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -125,9 +125,8 @@ def login_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def load_music_preview(request):
-    """根据 user_id 从用户音乐库中随机加载歌曲预览"""
     user_id = request.query_params.get('user_id')
     if not user_id:
         return Response({'error': 'provided with no ID'}, status=status.HTTP_400_BAD_REQUEST)

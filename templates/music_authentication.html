@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>music_authentication.html - 音乐认证系统</title>
+    <title>PasswordMania</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
     <div class="bg-white p-8 rounded-2xl shadow-lg w-96">
-        <h2 class="text-2xl font-bold mb-6 text-center">音乐认证</h2>
-        <audio id="audioPlayer" class="w-full mb-4" hidden></audio> <!-- 隐藏默认的播放控件 -->
-        <button onclick="playPreview()" class="mb-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">播放预览</button> <!-- 自定义播放按钮 -->
+        <h2 class="text-2xl font-bold mb-6 text-center">PasswordMania-Music Authentication</h2>
+        <audio id="audioPlayer" class="w-full mb-4" hidden></audio> 
+        <button onclick="playPreview()" class="mb-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">Music Preview</button> <!-- 自定义播放按钮 -->
         <div id="options" class="grid grid-cols-1 gap-4"></div>
-        <p id="progress" class="mt-4 text-center text-gray-600">第 1 / 5 首</p>
+        <p id="progress" class="mt-4 text-center text-gray-600">1 / 5</p>
     </div>
 
     <script>
@@ -27,8 +27,8 @@
 
         async function fetchSongs() {
             if (!userId || !token) {
-                alert('用户未登录，请重新登录');
-                window.location.href = 'login.html';
+                alert('User Not found. Please Login Again');
+                window.location.href = '/';
                 return;
             }
 

@@ -3,19 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>pass.html - 音乐认证系统</title>
+    <title>PasswordMania-Music Authentication</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-green-100 flex items-center justify-center h-screen">
-    <div class="bg-white p-8 rounded-2xl shadow-lg w-96 text-center">
-        <h2 class="text-2xl font-bold mb-6 text-green-500">登录成功！🎉</h2>
-        <p class="text-gray-700 mb-6">恭喜！您已成功通过音乐认证。</p>
-        <button onclick="retry()" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">再试一次</button>
+<body class="bg-white h-screen relative">
+    <!-- 右上角用户账号 -->
+    <div class="absolute top-4 right-4">
+        <span id="accountDisplay" class="cursor-pointer font-semibold text-blue-600" onclick="toggleUserMenu()">加载中...</span>
+        <div id="userMenu" class="hidden bg-white shadow-md rounded-lg p-4 mt-2 absolute right-0 w-48">
+            <button class="w-full text-left py-1 hover:bg-gray-100 transition" onclick="viewProfile()">User Info</button>
+            <button class="w-full text-left py-1 hover:bg-gray-100 transition" onclick="managePrivacy()">Privacy Management</button>
+            <button class="w-full text-left py-1 hover:bg-gray-100 transition" onclick="startMusicSelect()">Music Auth</button>
+            <button class="w-full text-left py-1 hover:bg-gray-100 transition" onclick="openSettings()">Settings</button>
+        </div>
+        <div id="tipBox" class="hidden bg-yellow-200 text-yellow-800 p-2 rounded-lg shadow-md absolute top-0 right-0 mt-10 mr-4">
+            <span>Select Music Auth as Two Factor Authentication</span>
+            <button onclick="closeTip()" class="ml-2">✖️</button>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="flex items-center justify-center h-full">
+        <div class="text-center">
+            <h2 class="text-3xl font-bold mb-4 text-green-500">Login Success🎉</h2>
+            <button onclick="retry()" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">Back to System</button>
+        </div>
     </div>
 
     <script>
+        async function fetchUserInfo() {
+            try {
+                const response = await fetch('/api/current-user');
+                const data = await response.json();
+                if (data && data.username) {
+                    document.getElementById("accountDisplay").innerText = data.username;
+                    checkUserSongs(data.username);
+                } else {
+                    document.getElementById("accountDisplay").innerText = "User Profile";
+                }
+            } catch (error) {
+                console.error("Error fetching user info:", error);
+                document.getElementById("accountDisplay").innerText = "User Profile";
+            }
+        }
+
+        async function checkUserSongs(username) {
+            try {
+                const response = await fetch(`/api/user-songs?user=${username}`);
+                const data = await response.json();
+                if (!data.songs || data.songs.length === 0) {
+                    document.getElementById("tipBox").classList.remove("hidden");
+                }
+            } catch (error) {
+                console.error("Error fetching user songs:", error);
+            }
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById("userMenu");
+            menu.classList.toggle("hidden");
+        }
+
+        function startMusicSelect() {
+            window.location.href = "/select_music/";
+        }
+
         function retry() {
             window.location.href = '/';
+        }
+
+        function closeTip() {
+            document.getElementById("tipBox").classList.add("hidden");
+        }
+
+        function viewProfile() {
+            alert('Personal Profile');
+        }
+
+        function managePrivacy() {
+            alert('Privacy Manage');
+        }
+
+        function openSettings() {
+            alert('Settings');
+        }
+
+        window.onload = fetchUserInfo;
+
+        window.onclick = function(event) {
+            const menu = document.getElementById("userMenu");
+            if (!event.target.matches('#accountDisplay')) {
+                if (!menu.classList.contains("hidden")) {
+                    menu.classList.add("hidden");
+                }
+            }
         }
     </script>
 </body>
