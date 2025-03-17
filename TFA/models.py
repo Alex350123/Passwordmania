@@ -1,16 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-from django.contrib.auth.hashers import make_password
 from django.utils.translation import gettext_lazy as _
 
 class Music(models.Model):
-    spotify_id = models.CharField(max_length=255, unique=True)  # Spotify 的唯一标识符
-    title = models.CharField(max_length=255)  # 歌曲标题
-    artist = models.CharField(max_length=255)  # 艺术家名字
+    spotify_id = models.CharField(max_length=255, unique=True)
+    title = models.CharField(max_length=255)
+    artist = models.CharField(max_length=255)
     preview_url = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
-        return f"{self.title} by {self.artist}"  # 返回歌曲信息，便于管理和调试
+        return f"{self.title} by {self.artist}"
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):

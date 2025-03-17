@@ -14,7 +14,7 @@ from rest_framework import status, permissions
 from .serializers import CustomUserSerializer, LoginSerializer
 from django.http import JsonResponse
 import requests
-
+import random
 
 def spotify_search_view(request):
     client_id = 'fa6160056b324d3dba6f28b488af0acf'
@@ -32,22 +32,22 @@ def spotify_search_view(request):
     # print(f"Spotify API Response: {search_results}")
 
     filtered_tracks = []
-    node_server_url = "http://localhost:3000/preview"  # Node.js 服务器地址
+    node_server_url = "http://localhost:3000/preview"
 
     for track in search_results.get("tracks", {}).get("items", []):
         title = track["name"]
-        preview_url = track.get("preview_url")  # 先尝试从 Spotify API 获取
+        preview_url = track.get("preview_url")
 
-        # 如果 `preview_url` 为空，则调用 Node.js 服务器
+
         if not preview_url:
             try:
                 node_response = requests.get(f"{node_server_url}?title={title}")
                 if node_response.status_code == 200:
                     preview_data = node_response.json()
                     preview_url = preview_data.get("previewUrl", None)
-                    print(f" Node.js 返回的 previewUrl: {preview_url}")  #  调试信息
+                    print(f" Node.js  previewUrl: {preview_url}")
             except requests.RequestException as e:
-                print(f" 获取 previewUrl 失败: {e}")
+                print(f" failto to fetch previewUrl: {e}")
 
 
         if preview_url:
@@ -58,21 +58,21 @@ def spotify_search_view(request):
                 'preview_url': preview_url
             })
 
-    print(f"过滤后的歌曲列表: {filtered_tracks}")  #  调试信息
+    print(f"filtered playlist: {filtered_tracks}")
     return JsonResponse({'tracks': filtered_tracks}, safe=False)
 
 
 def select_music_view(request):
-    return render(request,"selectmusic.html")
+    return render(request,"selectmusic2.html")
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])  # 允许未登录用户调用（如果安全性允许）
+@permission_classes([AllowAny])
 def save_music(request):
-    user_id = request.data.get('user_id')  # 获取用户 ID
-    spotify_ids = request.data.get('spotify_ids', [])  # 获取歌曲列表
+    user_id = request.data.get('user_id')  # get userid for auth
+    spotify_ids = request.data.get('spotify_ids', [])
 
-    user = get_object_or_404(CustomUser, id=user_id)  # 获取用户
+    user = get_object_or_404(CustomUser, id=user_id)
     user.music_authenticated = True
     user.save()
     music_objects = []
@@ -81,16 +81,16 @@ def save_music(request):
         spotify_id = spotify_data.get('spotify_id')
         title = spotify_data.get('title', 'Unknown')
         artist = spotify_data.get('artist', 'Unknown')
-        preview_url = spotify_data.get('preview_url', '')  # 获取预览 URL
+        preview_url = spotify_data.get('preview_url', '')
 
-        # 创建或更新 Music 记录
+
         music, created = Music.objects.update_or_create(
             spotify_id=spotify_id,
             defaults={'title': title, 'artist': artist, 'preview_url': preview_url}
         )
         music_objects.append(music)
 
-    # 添加到用户的音乐库
+
     user.music.add(*music_objects)
 
     return Response({'message': 'Music updated/added successfully'}, status=status.HTTP_200_OK)
@@ -133,7 +133,10 @@ def load_music_preview(request):
     if not user_id:
         return Response({'error': 'provided with no ID'}, status=status.HTTP_400_BAD_REQUEST)
     user = get_object_or_404(CustomUser, id=user_id)
-    user_music = user.music.all().order_by('?')[:5]
+    music_ids = list(user.music.values_list('id', flat=True))
+    random_ids = random.sample(music_ids, min(5, len(music_ids)))  
+    user_music = Music.objects.filter(id__in=random_ids)
+
     tracks_details = [{
         'title': music.title,
         'artist': music.artist,

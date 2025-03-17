@@ -13,20 +13,20 @@ class MusicSerializer(serializers.ModelSerializer):
         return Music.objects.get_or_create(spotify_id=validated_data['spotify_id'])[0]
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    music = MusicSerializer(many=True, read_only=True)  # 多对多关系，只读
-    password = serializers.CharField(write_only=True)  # 密码字段不应返回给客户端
+    music = MusicSerializer(many=True, read_only=True)
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = CustomUser
         fields = ['email', 'user_name', 'password', 'music']
-        extra_kwargs = {'password': {'write_only': True}}  # 确保密码不会被读取
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         user = CustomUser(
             email=validated_data['email'],
             user_name=validated_data['user_name']
         )
-        user.set_password(validated_data['password'])  # 使用 Django 的密码散列方法
+        user.set_password(validated_data['password'])
         user.save()
         return user
 
