@@ -22,7 +22,7 @@ After you’ve met the basic requirements, unzip and open the source code folder
 1. In the folder, you can see a file ‘requirements.txt’, this file contains all the modules that we used in python to work on the project, you’ll have to install them as well. To install all the modules in one go, open the python terminal, in that, open the project folder, and run the following command:
 
 
-   pip install -r requirements.txt
+      pip install -r requirements.txt
 
 
 This command will install all the required modules.
@@ -35,7 +35,7 @@ and you’ll be good to go.
 
 2. Now, to run the project on your localhost, enter the following command on your terminal:
 
-    python manage.py runserver
+      python manage.py runserver
 
 
 Now, after this command, if you open localhost:8000 on your web browser, it should open our login page. 
@@ -49,7 +49,7 @@ email: admin@outlook.com, password: 123456
 
 To create a Manager User, enter the following command on your terminal:
 
-    python manage.py createsuperuser
+      python manage.py createsuperuser
 
 After entering username and password, you will be able to login as a manager in manager login page. For quick going through, you can use default manager user:
 Manager User:
@@ -61,21 +61,21 @@ If you want to use this system with just your own data, follow these instruction
 
 1. open the python terminal, in that, open the project folder, and run the following command:
 
-    pip install -r requirements.txt
+      pip install -r requirements.txt
 
 2. delete db.sqlite3 file
 
 3. run the following commands in this order, to migrate the SQL database onto your system:
 
-    python model.py makemigrations
+      python model.py makemigrations
 
-    python model.py migrate
+      python model.py migrate
 
 after running these commands, the database should be synced with your system.
 
 4. enter the following command on your terminal:
 
-    python manage.py runserver
+      python manage.py runserver
 
 Now you should be able to run this project on your localhost
 
@@ -85,7 +85,7 @@ POSSIBLE ERROR ENCOUNTERS AND THEIR SOLUTION
 A. Not being able to locate the manage.py file:
 Go to the root directory using the command line and run the command:
 
-    python manage.py runserver
+      python manage.py runserver
 
 This should solve the issue, and then check on localhost:8000 again.
 
