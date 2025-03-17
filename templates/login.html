@@ -66,8 +66,17 @@
                     
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('userId', data.id); 
-                    alert('Proceed to Music Authentication');
-                    window.location.href = '/authenticate/';  // 跳转到音乐验证页面
+                    localStorage.setItem('2FA', data.music_auth);
+                    
+                    if(data.music_auth == true){
+                        alert('Proceed to Music Authentication');
+                        window.location.href = '/authenticate/';  // 跳转到音乐验证页面
+                    }
+                    else{
+                        alert('Login Success')
+                        window.location.href = '/pass/'
+                    }
+                    
                 } else {
                     alert('Incorrect Email or Password.');
                 }

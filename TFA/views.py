@@ -73,6 +73,8 @@ def save_music(request):
     spotify_ids = request.data.get('spotify_ids', [])  # 获取歌曲列表
 
     user = get_object_or_404(CustomUser, id=user_id)  # 获取用户
+    user.music_authenticated = True
+    user.save()
     music_objects = []
 
     for spotify_data in spotify_ids:
@@ -114,7 +116,7 @@ class LoginAPIView(APIView):
             user = serializer.validated_data
             if user:
                 token, created = Token.objects.get_or_create(user=user)
-                return Response({'token': token.key,'id':user.id}, status=status.HTTP_200_OK)
+                return Response({'token': token.key,'id':user.id,'music_auth': user.music_authenticated}, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

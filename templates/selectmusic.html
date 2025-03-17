@@ -5,34 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spotify Song Selector</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .top-section, .results-section, .selected-section {
+            margin: 20px 0;
+        }
+        .results-item, .selected-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .results-item audio, .selected-item audio {
+            flex: 1;
+        }
+        .button-container {
+            margin-left: 10px;
+        }
         .selected {
             color: green;
             font-weight: bold;
         }
-        .result-item {
+        button {
             cursor: pointer;
         }
-        button {
-            margin-top: 10px;
+        #searchQuery {
+            width: 70%;
+            padding: 10px;
+            margin-right: 10px;
+        }
+        #searchButton {
+            padding: 10px 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Search Spotify Tracks</h1>
-    <input type="text" id="searchQuery" placeholder="Enter song, artist, or album">
-    <button type="button" onclick="searchSongs()">Search</button>
-
-    <form id="songsForm" onsubmit="submitSongs(event)">
-        {% csrf_token %}
-        <ul id="resultsList"></ul>
-        <h2>Selected Songs (Minimum 5):</h2>
-        <ul id="selectedSongsList"></ul>
-        <button type="submit" style="display:none;" id="submitBtn">Submit Selected Songs</button>
-    </form>
+    <div class="container">
+        <div class="top-section">
+            <h1>Search Spotify Tracks</h1>
+            <input type="text" id="searchQuery" placeholder="Enter song, artist, or album">
+            <button type="button" id="searchButton" onclick="searchSongs()">Search</button>
+        </div>
+        <div class="results-section">
+            <h2>Search Results:</h2>
+            <ul id="resultsList"></ul>
+        </div>
+        <div class="selected-section">
+            <h2>Selected Songs (Minimum 5):</h2>
+            <ul id="selectedSongsList"></ul>
+            <button type="submit" style="display:none;" id="submitBtn">Submit Selected Songs</button>
+        </div>
+    </div>
 
     <script>
         let selectedSongs = new Map();
-        
+
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -96,7 +132,7 @@
                 artist: track.artist,
                 preview_url: track.preview_url  // 确保 preview_url 也被存储
             };
-        
+
             if (selectedSongs.has(track.spotify_id)) {
                 selectedSongs.delete(track.spotify_id);
                 li.classList.remove('selected');
@@ -131,7 +167,7 @@
                     refreshSelectedSongs();
                 };
 
-                songLi.appendChild(audio);
+                
                 songLi.appendChild(removeButton);
                 selectedSongsList.appendChild(songLi);
             });
@@ -141,16 +177,16 @@
 
         function submitSongs(event) {
             event.preventDefault();
-            
+
             if (selectedSongs.size < 5) {
                 alert('Please select at least 5 songs.');
                 return;
             }
-        
+
             const songsData = Array.from(selectedSongs.values());
-        
+
             const userId = localStorage.getItem('userId');
-        
+
             fetch('/api/savemusic/', {
                 method: 'POST',
                 headers: {

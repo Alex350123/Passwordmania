@@ -6,7 +6,7 @@ from .models import CustomUser, Music
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    list_display = ('email', 'user_name', 'is_staff', 'is_active', 'display_music')
+    list_display = ('email', 'user_name', 'is_staff', 'music_authenticated', 'display_music')
     list_filter = ('is_staff', 'is_active', 'groups')
     search_fields = ('email', 'user_name')
     ordering = ('email',)

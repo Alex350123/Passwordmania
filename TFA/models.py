@@ -31,13 +31,13 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_('email address'), unique=True)
-    user_name = models.CharField(_('user name'), max_length=150)  # 确保这个字段被定义
+    user_name = models.CharField(_('user name'), max_length=150)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    music = models.ManyToManyField(Music, blank=True)  # 确保这一行
-
+    music_authenticated = models.BooleanField(default=False)
+    music = models.ManyToManyField(Music, blank=True)
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['user_name']  # 现在是正确的
+    REQUIRED_FIELDS = ['user_name']
 
     objects = CustomUserManager()
 
