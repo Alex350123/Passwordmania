@@ -1,5 +1,6 @@
 PasswordMania is a two factor authentication prototype based on music recognition. New users should register with email and password. They can then import music authenticating part as the 2FA. 
 After building their own music library, users will be asked to select correct title from 4 options based on the first second of the song. If they failed during any of the five questions, their login attempt will be denied. 
+
 REQUIREMENTS
 
 To run the project smoothly on your system, make sure the following requirements are met:
@@ -29,14 +30,13 @@ This command will install all the required modules.
 
 In order to load preview urls, install the folowing node packages through the following commands in the ternimal:
 
-  npm install dotenv express cors spotify-preview-finder
+      npm install dotenv express cors spotify-preview-finder
 
 and you’ll be good to go.
 
 2. Now, to run the project on your localhost, enter the following command on your terminal:
 
-      python manage.py runserver
-
+         python manage.py runserver
 
 Now, after this command, if you open localhost:8000 on your web browser, it should open our login page. 
 
@@ -61,21 +61,21 @@ If you want to use this system with just your own data, follow these instruction
 
 1. open the python terminal, in that, open the project folder, and run the following command:
 
-      pip install -r requirements.txt
+         pip install -r requirements.txt
 
 2. delete db.sqlite3 file
 
 3. run the following commands in this order, to migrate the SQL database onto your system:
 
-      python model.py makemigrations
+         python model.py makemigrations
 
-      python model.py migrate
+         python model.py migrate
 
 after running these commands, the database should be synced with your system.
 
 4. enter the following command on your terminal:
 
-      python manage.py runserver
+         python manage.py runserver
 
 Now you should be able to run this project on your localhost
 
