@@ -32,6 +32,10 @@ In order to load preview urls, install the folowing node packages through the fo
 
       npm install dotenv express cors spotify-preview-finder
 
+then start js service with command:
+
+      node server.js
+
 and you’ll be good to go.
 
 2. Now, to run the project on your localhost, enter the following command on your terminal:
@@ -91,5 +95,11 @@ This should solve the issue, and then check on localhost:8000 again.
 
 B. User interface not loading properly:
 Make sure that your system is connected to the internet and try again.
+
+C. Music search result not loading properly:
+Make Sure you start node.js service with command
+      node server.js
+Chances are that Spotify API provided are expired.
+You can register at Spotify dashboard at https://developer.spotify.com/dashboard and replace with your SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRETS
 
 
